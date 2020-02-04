@@ -7,15 +7,15 @@ def hello():
     return jsonify({'message': 'Hello world!'})
 
 
-@app.route('/similarity', methods=['POST'])
-def add_income():
+
+@app.route('/api', methods=['GET'])
+def api2():
   myjson = request.get_json()
   sentences = ['Buy milk, meat, groceries', 
              'Book airplane, reserve seats, check in and remember frequent flyer miles']
 
   rv = jsonify(myjson)
-  print(rv)
-  return rv, 204
+  return rv
 
 
 app.run(host='0.0.0.0', port=81)

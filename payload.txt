@@ -1,1 +1,1 @@
-["count" , "5" ]
+["buy milk" , "collect flour, eggs and bacon", "read book about neural networks and probabilistic computations" ]

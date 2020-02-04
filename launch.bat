@@ -1,1 +1,1 @@
-curl -X POST -H "Content-Type: application/json" http://localhost:81/similarity -d "@payload.txt"
+curl -X GET -H "Content-Type: application/json" http://localhost:81/api -d "@payload.txt" -o "result.txt"

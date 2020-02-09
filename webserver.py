@@ -1,13 +1,77 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, make_response, current_app, render_template, session, redirect, url_for
+
+from flask_bootstrap import Bootstrap
+from flask_moment import Moment
+
+from flask_wtf import FlaskForm
+from wtforms import StringField, SubmitField
+from wtforms.validators import DataRequired
 
 from sentence_transformers import SentenceTransformer
 from scipy.spatial.distance import cdist
 
-app = Flask(__name__)
 
-@app.route("/", methods=['GET'])
-def hello():
-    return jsonify({'message': 'Hello world!'})
+
+todolist0 = ['Buy flour and go shopping']
+todolist1 = ['read book about neural networks and machine learning']
+
+todolists = [todolist0, todolist1]
+todolists[1].append('take notes of artificial intelligence experiment')
+
+app = Flask(__name__)
+app.config['SECRET_KEY'] = 'fhhuiwhksn'
+
+bootstrap = Bootstrap(app)
+moment = Moment(app)
+
+
+class NameForm(FlaskForm):
+    name = StringField('What is the todo you want to assign', validators=[DataRequired()])
+    submit = SubmitField('Submit')
+
+
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
+
+
+@app.errorhandler(500)
+def internal_server_error(e):
+    return render_template('500.html'), 500
+
+
+@app.route('/', methods=['GET', 'POST'])
+def index():
+
+    
+    form = NameForm()
+    if form.validate_on_submit():
+         # we have a new string
+        todolist = [getFullString(todolists[0]), getFullString(todolists[1]) ]
+        idx, distance = getClosestIndex(form.name.data, todolist)
+        todolists[idx].append(form.name.data)
+        session['name'] = form.name.data
+        session['idx'] = idx
+
+        return redirect(url_for('index'))
+
+    return render_template('index.html', form=form, name=session.get('name'), bucket = session.get('idx'), list1 = todolists[0], list2 = todolists[1])
+
+def getFullString(x):
+    res = ''
+    for y in x:
+        res = res + y + '. '
+    return res
+
+@app.route("/test", methods=['GET', 'POST'])
+def indexold():
+    
+    #response = make_response('<h1>Hello World2</h1>')
+    #response.set_cookie('state','41')
+    return render_template('index.html', todo1 = line1)
+    return response
+    #return jsonify({'message': 'Hello world!'})
 
 
 
@@ -15,10 +79,8 @@ def hello():
 def api2():
     myjson = request.get_json()
     idx, distance = getClosestIndex(myjson[0], myjson[1:])
-    sentences = ['Buy milk, meat, groceries', 
-                'Book airplane, reserve seats, check in and remember frequent flyer miles']
-
-    rv = jsonify(idx)
+    
+    rv = jsonify([idx, distance])
     return rv
 
 
@@ -59,6 +121,6 @@ def getClosestIndex(query, sentences):
 
         for idx, distance in results[0:number_top_matches]:
             return idx, distance
-            print(sentences[idx].strip(), "(Cosine Score: %.4f)" % (1-distance))
+        #    print(sentences[idx].strip(), "(Cosine Score: %.4f)" % (1-distance))
 
 app.run(host='0.0.0.0', port=81)

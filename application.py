@@ -23,7 +23,7 @@ app.config['SECRET_KEY'] = 'fhhuiwhksn'
 bootstrap = Bootstrap(app)
 moment = Moment(app)
 
-# Set up the initial todo lists
+model = SentenceTransformer('bert-base-nli-mean-tokens')
 
 class SetupForm(FlaskForm):
     todo1 = StringField('Enter the first todo of the first list', validators=[DataRequired()])
@@ -130,7 +130,7 @@ def getFullString(x):
 
 
 def getClosestIndex(query, sentences):
-    model = SentenceTransformer('bert-base-nli-mean-tokens')
+    
 
     # sentences = ['Buy milk, meat, groceries', 
     #            'Book airplane, reserve seats, check in and remember frequent flyer miles']
@@ -138,9 +138,9 @@ def getClosestIndex(query, sentences):
     # Each sentence is encoded as a 1-D vector with 78 columns
     sentence_embeddings = model.encode(sentences)
 
-    print('Sample BERT embedding vector - length', len(sentence_embeddings[0]))
+    # print('Sample BERT embedding vector - length', len(sentence_embeddings[0]))
 
-    print('Sample BERT embedding vector - note includes negative values', sentence_embeddings[0])
+    # print('Sample BERT embedding vector - note includes negative values', sentence_embeddings[0])
 
     # code adapted from https://github.com/UKPLab/sentence-transformers/blob/master/examples/application_semantic_search.py
 
@@ -152,7 +152,7 @@ def getClosestIndex(query, sentences):
     # Find the closest 3 sentences of the corpus for each query sentence based on cosine similarity
     number_top_matches = 3 #@param {type: "number"}
 
-    print("Semantic Search Results")
+    # print("Semantic Search Results")
 
     for query, query_embedding in zip(queries, query_embeddings):
         distances = cdist([query_embedding], sentence_embeddings, "cosine")[0]
@@ -160,9 +160,9 @@ def getClosestIndex(query, sentences):
         results = zip(range(len(distances)), distances)
         results = sorted(results, key=lambda x: x[1])
 
-        print("\n\n======================\n\n")
-        print("Query:", query)
-        print("\nTop 5 most similar sentences in corpus:")
+        #print("\n\n======================\n\n")
+        #print("Query:", query)
+        #print("\nTop 5 most similar sentences in corpus:")
 
         for idx, distance in results[0:number_top_matches]:
             return idx, distance, distances

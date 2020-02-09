@@ -31,7 +31,7 @@ class SetupForm(FlaskForm):
     submit = SubmitField('Save list')
 
 class NameForm(FlaskForm):
-    name = StringField('What is the todo you want me to assign to either list 1 or list 2', validators=[DataRequired()])
+    name = StringField('Enter a new todo. I will guess which list it belongs to', validators=[DataRequired()])
     submit = SubmitField('Guess which list it belongs to')
 
 
@@ -72,18 +72,20 @@ def additems():
         todolist2 = session['todo2']
          # we have a new string
         todolist = [getFullString(todolist1), getFullString(todolist2) ]
-        idx, distance = getClosestIndex(form.name.data, todolist)
+        idx, distance, distances = getClosestIndex(form.name.data, todolist)
+        session['confidence1'] = 1-distances[0]
+        session['confidence2'] = 1-distances[1]
         if (idx == 0):
-            session['todo1'].append(form.name.data)
+            session['todo1'].append(form.name.data)  
         else:
             session['todo2'].append(form.name.data)
          
         session['name'] = form.name.data
         session['idx'] = idx + 1   # bucket starts at 0
-
+        
         return redirect(url_for('additems'))
 
-    return render_template('index.html', form=form, name=session.get('name'), bucket = session.get('idx'), list1 = session['todo1'], list2 = session['todo2'])
+    return render_template('index.html', form=form, name=session.get('name'), bucket = session.get('idx'), list1 = session['todo1'], list2 = session['todo2'], confidence1 = session.get('confidence1'), confidence2 = session.get('confidence2'))
 
 # General pages
 
@@ -163,7 +165,7 @@ def getClosestIndex(query, sentences):
         print("\nTop 5 most similar sentences in corpus:")
 
         for idx, distance in results[0:number_top_matches]:
-            return idx, distance
+            return idx, distance, distances
         #    print(sentences[idx].strip(), "(Cosine Score: %.4f)" % (1-distance))
 
 if __name__ == "__main__":

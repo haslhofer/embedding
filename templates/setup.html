@@ -1,9 +1,16 @@
 {% extends "base.html" %}
 {% import "bootstrap/wtf.html" as wtf %}
 
-{% block title %}PyBert prototype Setup {% endblock %}
+{% block title %}Smart Todo prototype: Setup {% endblock %}
 
 {% block page_content %}
+<div class="page-header">
+
+    <h1>Welcome to the Smart Todo Prototype </h1> <br>
+    First, let's set up two separate todo lists. Just choose one todo for each one. <br>
+    Later, you can add new todos and I'll guess which list they likely belong to. <br>
+    
+</div>
 
 {{ wtf.quick_form(form) }}
 

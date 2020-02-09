@@ -6,7 +6,12 @@
 {% block page_content %}
 <div class="page-header">
 
-    {% if name %}{{ name }} <h1>I think it belongs to list #   {{ bucket }} </h1>{% else %}{% endif %}
+    {% if name %}{{ name }} 
+    <h1>I think it belongs to list #   {{ bucket }} </h1> <br>
+    Confidence for list #1: {{ confidence1 }} <br> 
+    Confidence for list #2: {{ confidence2 }}
+    
+    {% else %}{% endif %}
     
 </div>
 

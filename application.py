@@ -12,10 +12,10 @@ from scipy.spatial.distance import cdist
 
 
 
-todolist0 = ['Buy flour and go shopping and then go swimming']
-todolist1 = ['read book about neural networks and machine learning']
+#todolist0 = ['Buy flour and go shopping and then go swimming']
+#todolist1 = ['read book about neural networks and machine learning']
 
-todolists = [todolist0, todolist1]
+#todolists = [todolist0, todolist1]
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'fhhuiwhksn'
@@ -23,12 +23,69 @@ app.config['SECRET_KEY'] = 'fhhuiwhksn'
 bootstrap = Bootstrap(app)
 moment = Moment(app)
 
+# Set up the initial todo lists
+
+class SetupForm(FlaskForm):
+    todo1 = StringField('Enter the first todo of the first list', validators=[DataRequired()])
+    todo2 = StringField('Enter the first todo of the second list', validators=[DataRequired()])
+    submit = SubmitField('Save list')
 
 class NameForm(FlaskForm):
     name = StringField('What is the todo you want me to assign to either list 1 or list 2', validators=[DataRequired()])
     submit = SubmitField('Guess which list it belongs to')
 
 
+@app.before_request
+def before_request_func():
+    print("before_request completed!")
+
+
+@app.route('/', methods=['GET'])
+def index():
+    return redirect(url_for('setupitems'))
+
+
+@app.route('/setupitems', methods=['GET', 'POST'])
+def setupitems():
+
+    form = SetupForm()
+    if form.validate_on_submit():
+         # we have a new string
+        todo1 = form.todo1.data 
+        todo2 = form.todo2.data
+
+        session['todo1'] = [todo1]
+        session['todo2'] = [todo2]
+        
+        return redirect(url_for('additems'))
+
+    return render_template('setup.html', form=form)
+
+
+@app.route('/additems', methods=['GET', 'POST'])
+def additems():
+
+    
+    form = NameForm()
+    if form.validate_on_submit():
+        todolist1 = session['todo1']
+        todolist2 = session['todo2']
+         # we have a new string
+        todolist = [getFullString(todolist1), getFullString(todolist2) ]
+        idx, distance = getClosestIndex(form.name.data, todolist)
+        if (idx == 0):
+            session['todo1'].append(form.name.data)
+        else:
+            session['todo2'].append(form.name.data)
+         
+        session['name'] = form.name.data
+        session['idx'] = idx + 1   # bucket starts at 0
+
+        return redirect(url_for('additems'))
+
+    return render_template('index.html', form=form, name=session.get('name'), bucket = session.get('idx'), list1 = session['todo1'], list2 = session['todo2'])
+
+# General pages
 
 @app.errorhandler(404)
 def page_not_found(e):
@@ -39,32 +96,7 @@ def page_not_found(e):
 def internal_server_error(e):
     return render_template('500.html'), 500
 
-@app.before_request
-def before_request_func():
-    print("before_request is running!")
-
-@app.route('/', methods=['GET', 'POST'])
-def index():
-
-    
-    form = NameForm()
-    if form.validate_on_submit():
-         # we have a new string
-        todolist = [getFullString(todolists[0]), getFullString(todolists[1]) ]
-        idx, distance = getClosestIndex(form.name.data, todolist)
-        todolists[idx].append(form.name.data)
-        session['name'] = form.name.data
-        session['idx'] = idx + 1   # bucket starts at 0
-
-        return redirect(url_for('index'))
-
-    return render_template('index.html', form=form, name=session.get('name'), bucket = session.get('idx'), list1 = todolists[0], list2 = todolists[1])
-
-def getFullString(x):
-    res = ''
-    for y in x:
-        res = res + y + '. '
-    return res
+# Test routines
 
 @app.route("/test", methods=['GET', 'POST'])
 def indexold():
@@ -76,7 +108,6 @@ def indexold():
     #return jsonify({'message': 'Hello world!'})
 
 
-
 @app.route('/api', methods=['GET'])
 def api2():
     myjson = request.get_json()
@@ -84,6 +115,16 @@ def api2():
     
     rv = jsonify([idx, distance])
     return rv
+
+
+# Utilities
+def getFullString(x):
+    res = ''
+    for y in x:
+        res = res + y + '. '
+    return res
+
+
 
 
 def getClosestIndex(query, sentences):

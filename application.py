@@ -32,7 +32,7 @@ class SetupForm(FlaskForm):
 
 class NameForm(FlaskForm):
     name = StringField('Enter a new todo. I will guess which list it belongs to', validators=[DataRequired()])
-    submit = SubmitField('Guess which list it belongs to')
+    submit = SubmitField('Guess!')
 
 
 @app.before_request

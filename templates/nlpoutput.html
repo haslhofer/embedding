@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}Entity extraction: Results {% endblock %}
+
+{% block page_content %}
+<div class="page-header">
+
+    <h1>Here is what I found</h1> <br>
+    {{ nlpresult }}
+</div>
+
+{{ wtf.quick_form(form) }}
+
+{% endblock %}

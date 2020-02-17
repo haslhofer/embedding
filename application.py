@@ -10,12 +10,9 @@ from wtforms.validators import DataRequired
 from sentence_transformers import SentenceTransformer
 from scipy.spatial.distance import cdist
 
+import spacy
 
-
-#todolist0 = ['Buy flour and go shopping and then go swimming']
-#todolist1 = ['read book about neural networks and machine learning']
-
-#todolists = [todolist0, todolist1]
+# Need to run 'python -m spacy download en_core_web_sm' from command line to load spacy model
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'fhhuiwhksn'
@@ -23,7 +20,26 @@ app.config['SECRET_KEY'] = 'fhhuiwhksn'
 bootstrap = Bootstrap(app)
 moment = Moment(app)
 
+# NLP
+nlp = spacy.load("en_core_web_sm")
+
+# Sentence embedding
+
 model = SentenceTransformer('bert-base-nli-mean-tokens')
+
+# NLP
+# ------------------------------------------------------------------------------------------------------
+
+class NlpForm(FlaskForm):
+    sentence = StringField('Enter a sentence where you want me to extract entities', validators=[DataRequired()])
+    submit = SubmitField('Recognize entities')
+
+class NlpOutput(FlaskForm):
+    submit = SubmitField('Do it again!')
+
+# Sentence embedding
+# ------------------------------------------------------------------------------------------------------
+
 
 class SetupForm(FlaskForm):
     todo1 = StringField('Enter the first todo of the first list', validators=[DataRequired()])
@@ -38,6 +54,41 @@ class NameForm(FlaskForm):
 @app.before_request
 def before_request_func():
     print("before_request completed!")
+
+@app.route('/nlp', methods=['GET', 'POST'])
+def getNlpText():
+
+    form = NlpForm()
+    if form.validate_on_submit():
+         # we have a new string
+        sentenceToParse = form.sentence.data
+        session['sentence'] = sentenceToParse
+        
+        return redirect(url_for('nlpparse'))
+
+    return render_template('nlp.html', form=form)
+
+
+
+@app.route('/nlpparse', methods=['GET', 'POST'])
+def nlpparse():
+
+    
+    form = NlpOutput()
+    if form.validate_on_submit():
+
+        return redirect(url_for('getNlpText'))
+
+    sentenceToParse = session['sentence'] 
+    doc = nlp(sentenceToParse)
+
+    printtext = ''
+    # Find named entities, phrases and concepts
+    for entity in doc.ents:
+        printtext = printtext + entity.text + ':' + entity.label_ + '.   '
+
+    return render_template('nlpoutput.html', form=form, nlpresult = printtext)
+
 
 
 @app.route('/', methods=['GET'])
@@ -169,4 +220,4 @@ def getClosestIndex(query, sentences):
         #    print(sentences[idx].strip(), "(Cosine Score: %.4f)" % (1-distance))
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=81)
+    app.run(host='0.0.0.0', port=5000)

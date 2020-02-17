@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}Gerald Haslhofer's NLP playground {% endblock %}
+
+{% block page_content %}
+<div class="page-header">
+<h1>Please choose which experiment you want to run:</h1>
+    <a href="{{ url_for('setupitems') }}">Smart Todo Prototype</a> <br>
+    <a href="{{ url_for('getNlpText') }}">Smart Entity Recognizer</a>
+
+    
+</div>
+
+
+{% endblock %}

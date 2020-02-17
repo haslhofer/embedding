@@ -6,8 +6,14 @@
 {% block page_content %}
 <div class="page-header">
 
-    <h1>Here is what I found</h1> <br>
-    {{ nlpresult }}
+    <h1>Here is what I found for entities</h1> <br>
+    {{ nlpresult }} <br>
+
+    <h1>And noun phrases</h1> <br>
+    {{ nounresult }} <br>
+
+
+    
 </div>
 
 {{ wtf.quick_form(form) }}

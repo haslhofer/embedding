@@ -82,18 +82,22 @@ def nlpparse():
     sentenceToParse = session['sentence'] 
     doc = nlp(sentenceToParse)
 
-    printtext = ''
+    printtext = []
     # Find named entities, phrases and concepts
     for entity in doc.ents:
-        printtext = printtext + entity.text + ':' + entity.label_ + '.   '
+        printtext.append(entity.text + ':' + entity.label_ + '.   ')
+    
+    # noun phrases
+    nounphrases = [chunk.text for chunk in doc.noun_chunks]
 
-    return render_template('nlpoutput.html', form=form, nlpresult = printtext)
+    return render_template('nlpoutput.html', form=form, nlpresult = printtext, nounresult = nounphrases)
 
 
 
 @app.route('/', methods=['GET'])
 def index():
-    return redirect(url_for('setupitems'))
+#    return redirect(url_for('setupitems'))
+    return render_template('experiments.html')
 
 
 @app.route('/setupitems', methods=['GET', 'POST'])
